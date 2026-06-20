@@ -61,7 +61,6 @@
       gap: 16px;
     }
 
-    /* ── TOP BAR ── */
     .topbar {
       display: flex;
       align-items: center;
@@ -75,7 +74,6 @@
     }
     .topbar-date { font-size: 13px; font-weight: 500; color: var(--muted); }
 
-    /* ── HERO ── */
     .hero {
       text-align: center;
       padding: 36px 24px 32px;
@@ -118,7 +116,6 @@
     }
     .hero-dollars { font-size: 22px; font-weight: 700; color: var(--off-white); }
 
-    /* ── ACTIONS ── */
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .action-btn {
@@ -140,7 +137,7 @@
     .action-icon {
       width: 64px; height: 64px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 34px; line-height: 1; font-weight: 300;
+      font-size: 34px; line-height: 1;
     }
     .action-btn.add .action-icon { background: rgba(52,211,153,0.15); color: var(--green); }
     .action-btn.sub .action-icon { background: rgba(248,113,113,0.15); color: var(--red); }
@@ -149,7 +146,6 @@
     .action-btn.add .action-label { color: var(--green); }
     .action-btn.sub .action-label { color: var(--red); }
 
-    /* ── HISTORY ── */
     .hist-head { display: flex; align-items: center; padding: 0 2px; }
     .hist-title {
       font-size: 12px; font-weight: 700;
@@ -171,7 +167,7 @@
     }
     .tx-row:last-child { border-bottom: none; }
 
-    .tx-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .tx-pip { width: 8px; height: 8px; border-radius: 50%; }
     .tx-pip.weekly { background: var(--blue); }
     .tx-pip.add    { background: var(--green); }
     .tx-pip.sub    { background: var(--red); }
@@ -187,7 +183,7 @@
     .tx-delta {
       font-size: 14px; font-weight: 700;
       font-variant-numeric: tabular-nums;
-      flex-shrink: 0; min-width: 44px; text-align: right;
+      min-width: 44px; text-align: right;
     }
     .tx-delta.weekly { color: var(--blue); }
     .tx-delta.add    { color: var(--green); }
@@ -197,19 +193,18 @@
       font-size: 12px; font-weight: 600;
       font-variant-numeric: tabular-nums;
       color: var(--blue-bright); opacity: 0.55;
-      flex-shrink: 0; min-width: 28px; text-align: right;
+      min-width: 28px; text-align: right;
     }
 
-    /* ── LOADING / ERROR ── */
     .status-block {
       text-align: center; padding: 48px 20px;
       background: var(--card);
       border: 1px solid var(--card-border);
       border-radius: var(--r);
     }
-    .status-block .status-icon { font-size: 32px; margin-bottom: 10px; }
-    .status-block .status-msg { font-size: 14px; color: var(--muted); }
-    .status-block .retry-btn {
+    .status-icon { font-size: 32px; margin-bottom: 10px; }
+    .status-msg { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .retry-btn {
       margin-top: 16px;
       background: rgba(77,159,255,0.15);
       border: 1px solid rgba(77,159,255,0.3);
@@ -218,7 +213,6 @@
       padding: 10px 20px; cursor: pointer;
     }
 
-    /* ── SHEET ── */
     .overlay {
       position: fixed; inset: 0;
       background: rgba(6,12,40,0.7);
@@ -292,14 +286,13 @@
     .btn-go {
       flex: 2; border: none; border-radius: 14px;
       font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 800;
-      padding: 15px; cursor: pointer; transition: transform .12s, opacity .12s;
+      padding: 15px; cursor: pointer; transition: transform .12s;
     }
     .btn-go:active { transform: scale(.96); }
     .btn-go.add { background: var(--green); color: #041a0e; }
     .btn-go.sub { background: var(--red); color: #fff; }
     .btn-go:disabled { opacity: 0.5; }
 
-    /* ── TOAST ── */
     .toast {
       position: fixed; bottom: calc(var(--safe-b) + 28px); left: 50%;
       transform: translateX(-50%) translateY(6px);
@@ -346,7 +339,6 @@
 
 </div>
 
-<!-- SHEET MODAL -->
 <div class="overlay" id="overlay" onclick="bgClose(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -376,23 +368,21 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG — replace with your deployed Apps Script URL ─────────────────────
-const API_URL   = 'https://script.google.com/macros/s/AKfycbwhZjw9gW8lYHReCnpeJNy-Qd0BbXd7vC_6l9dgZSLd46qu1zcNkvP0244NEA0xl5Ce/exec';
+const API = 'https://script.google.com/macros/s/AKfycbylydqn4EGJCDYEKP8y4OYbvjM77FZ7vf7kpIJMiiKAkzcYWKjbToukZklxdPnqa5ea/exec';
 const CENTS_PER = 10;
 const HIST_DAYS = 60;
 
-let txs  = [];
-let mode = 'add';
+let txs    = [];
+let mode   = 'add';
 let saving = false;
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
 document.getElementById('topDate').textContent =
   new Date().toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
 
 async function load() {
   showLoading();
   try {
-    const res  = await fetch(API_URL);
+    const res  = await fetch(API + '?action=load');
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     txs = data.txs;
@@ -402,19 +392,17 @@ async function load() {
   }
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
 function render() {
   const balance = Math.max(0, txs.reduce((s,t) => s + t.delta, 0));
   const hb = document.getElementById('heroBalance');
   hb.textContent = balance.toLocaleString();
-  document.getElementById('heroDollars').textContent = '$' + (balance * CENTS_PER / 100).toFixed(2);
+  document.getElementById('heroDollars').textContent =
+    '$' + (balance * CENTS_PER / 100).toFixed(2);
 
-  // running balance map
   const balMap = {};
   let run = 0;
   for (const t of txs) { run += t.delta; balMap[t.id] = Math.max(0, run); }
 
-  // last 60 days, newest first
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - HIST_DAYS);
   cutoff.setHours(0,0,0,0);
@@ -427,34 +415,31 @@ function render() {
     return;
   }
 
-  const today = dateStr(new Date());
-  const yest  = dateStr(yesterday());
+  const today = ds(new Date());
+  const yest  = ds(yesterday());
 
-  function friendlyDate(iso) {
+  function label(iso) {
     const d = iso.slice(0,10);
     if (d === today) return 'Today';
     if (d === yest)  return 'Yesterday';
-    const obj = new Date(d + 'T12:00:00');
-    return obj.toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
+    return new Date(d + 'T12:00:00').toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
   }
 
   wrap.innerHTML = `<div class="hist-card">${recent.map(t => {
     const pip  = t.type === 'weekly' ? 'weekly' : t.type === 'sub' ? 'sub' : 'add';
     const sign = t.delta >= 0 ? '+' : '';
-    return `
-      <div class="tx-row">
-        <div class="tx-pip ${pip}"></div>
-        <div class="tx-body">
-          <div class="tx-reason ${t.type==='weekly'?'is-weekly':''}">${esc(t.reason)}</div>
-          <div class="tx-date-label">${friendlyDate(t.ts)}</div>
-        </div>
-        <div class="tx-delta ${pip}">${sign}${t.delta}</div>
-        <div class="tx-bal">${balMap[t.id]}</div>
-      </div>`;
+    return `<div class="tx-row">
+      <div class="tx-pip ${pip}"></div>
+      <div class="tx-body">
+        <div class="tx-reason ${t.type==='weekly'?'is-weekly':''}">${esc(t.reason)}</div>
+        <div class="tx-date-label">${label(t.ts)}</div>
+      </div>
+      <div class="tx-delta ${pip}">${sign}${t.delta}</div>
+      <div class="tx-bal">${balMap[t.id]}</div>
+    </div>`;
   }).join('')}</div>`;
 }
 
-// ── STATUS STATES ─────────────────────────────────────────────────────────────
 function showLoading() {
   document.getElementById('heroBalance').textContent = '—';
   document.getElementById('heroDollars').textContent = '—';
@@ -469,18 +454,16 @@ function showError(msg) {
   document.getElementById('histWrap').innerHTML = `
     <div class="status-block">
       <div class="status-icon">⚠️</div>
-      <div class="status-msg">Couldn't load data.<br><small>${esc(msg||'')}</small></div>
+      <div class="status-msg">Couldn't load. Check connection.<br><small>${esc(msg||'')}</small></div>
       <button class="retry-btn" onclick="load()">Try again</button>
     </div>`;
 }
 
-// ── SHEET ─────────────────────────────────────────────────────────────────────
 function openSheet(m) {
   mode = m;
   document.getElementById('amtInput').value = '';
   document.getElementById('reasonInput').value = '';
   document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('sel'));
-
   const title = document.getElementById('sheetTitle');
   const go    = document.getElementById('goBtn');
   if (m === 'add') {
@@ -508,7 +491,13 @@ async function commit() {
 
   const delta = mode === 'sub' ? -amt : amt;
   const label = reason || (mode === 'add' ? 'Points added' : 'Points removed');
-  const tx    = { id: uid(), type: mode === 'sub' ? 'sub' : 'add', delta, reason: label, ts: new Date().toISOString() };
+  const tx    = {
+    id:     uid(),
+    type:   mode === 'sub' ? 'sub' : 'add',
+    delta,
+    reason: label,
+    ts:     new Date().toISOString()
+  };
 
   saving = true;
   const go = document.getElementById('goBtn');
@@ -516,10 +505,15 @@ async function commit() {
   go.textContent = 'Saving...';
 
   try {
-    const res  = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify(tx)
+    const params = new URLSearchParams({
+      action: 'add',
+      id:     tx.id,
+      type:   tx.type,
+      delta:  tx.delta,
+      reason: tx.reason,
+      ts:     tx.ts
     });
+    const res  = await fetch(API + '?' + params.toString());
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     txs = data.txs;
@@ -529,7 +523,7 @@ async function commit() {
     render();
     showToast(delta > 0 ? `+${delta} pts added` : `${Math.abs(delta)} pts removed`);
   } catch(err) {
-    showToast('Save failed — check connection');
+    showToast('Save failed — try again');
   } finally {
     saving = false;
     go.disabled = false;
@@ -537,14 +531,13 @@ async function commit() {
   }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 function uid()      { return Math.random().toString(36).slice(2,9); }
-function dateStr(d) { return d.toISOString().slice(0,10); }
+function ds(d)      { return d.toISOString().slice(0,10); }
 function yesterday(){ const d = new Date(); d.setDate(d.getDate()-1); return d; }
 function esc(s)     { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
